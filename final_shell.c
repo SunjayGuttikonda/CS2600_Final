@@ -1,9 +1,4 @@
-/***************************************************************************//**
-  @file         main.c
-  @author       Stephen Brennan
-  @date         Thursday,  8 January 2015
-  @brief        LSH (Libstephen SHell)
-*******************************************************************************/
+
 
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -12,16 +7,12 @@
 #include <stdio.h>
 #include <string.h>
 
-/*
-  Function Declarations for builtin shell commands:
- */
+
 int lsh_cd(char **args);
 int lsh_help(char **args);
 int lsh_exit(char **args);
 
-/*
-  List of builtin commands, followed by their corresponding functions.
- */
+
 char *builtin_str[] = {
   "cd",
   "help",
@@ -38,9 +29,6 @@ int lsh_num_builtins() {
   return sizeof(builtin_str) / sizeof(char *);
 }
 
-/*
-  Builtin function implementations.
-*/
 
 /**
    @brief Bultin command: change directory.
@@ -101,16 +89,13 @@ int lsh_launch(char **args)
 
   pid = fork();
   if (pid == 0) {
-    // Child process
     if (execvp(args[0], args) == -1) {
       perror("lsh");
     }
     exit(EXIT_FAILURE);
   } else if (pid < 0) {
-    // Error forking
     perror("lsh");
   } else {
-    // Parent process
     do {
       waitpid(pid, &status, WUNTRACED);
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
@@ -129,7 +114,6 @@ int lsh_execute(char **args)
   int i;
 
   if (args[0] == NULL) {
-    // An empty command was entered.
     return 1;
   }
 
@@ -173,7 +157,6 @@ char *lsh_read_line(void)
   }
 
   while (1) {
-    // Read a character
     c = getchar();
 
     if (c == EOF) {
@@ -186,7 +169,6 @@ char *lsh_read_line(void)
     }
     position++;
 
-    // If we have exceeded the buffer, reallocate.
     if (position >= bufsize) {
       bufsize += LSH_RL_BUFSIZE;
       buffer = realloc(buffer, bufsize);
@@ -267,12 +249,7 @@ void lsh_loop(void)
  */
 int main(int argc, char **argv)
 {
-  // Load config files, if any.
-
-  // Run command loop.
   lsh_loop();
-
-  // Perform any shutdown/cleanup.
 
   return EXIT_SUCCESS;
 }
