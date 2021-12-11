@@ -15,17 +15,12 @@ char *builtin_str[] = {
   "exit"
 };
 
-int (*builtin_func[]) (char **) = {
-  &lsh_cd,
-  &lsh_help,
-  &lsh_exit
-};
-
-int lsh_num_builtins() {
-  return sizeof(builtin_str) / sizeof(char *);
+int lsh_num_bulletins() {
+  return sizeof(builtin_str)/sizeof(char *);
 }
 
-int lsh_cd(char **args) {
+int lsh_cd(char **args)
+{
   if (args[1] == NULL) {
     fprintf(stderr, "lsh: expected argument to \"cd\"\n");
   } else {
@@ -35,8 +30,8 @@ int lsh_cd(char **args) {
   }
   return 1;
 }
-
-int lsh_help(char **args) {
+int lsh_help(char **args)
+{
   int i;
   printf("Stephen Brennan's LSH\n");
   printf("Type program names and arguments, and hit enter.\n");
@@ -49,41 +44,32 @@ int lsh_help(char **args) {
   printf("Use the man command for information on other programs.\n");
   return 1;
 }
-
-int lsh_exit(char ** args){
+int lsh_exit(char **args){
   return 0;
 }
-int lsh_launch(char **args)
-{
+int lsh_launch(char **args) {
   pid_t pid;
   int status;
-
   pid = fork();
-  if (pid == 0) {
-    // Child process
-    if (execvp(args[0], args) == -1) {
+  if(pid == 0){
+    if(execvp(args[0], args) == -1) {
       perror("lsh");
     }
     exit(EXIT_FAILURE);
-  } else if (pid < 0) {
-    // Error forking
+  }else if(pid < 0) {
     perror("lsh");
-  } else {
-    // Parent process
-    do {
+  }else{
+    do{
       waitpid(pid, &status, WUNTRACED);
-    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+    } while(!WIFEXITED(status) && !WIFSIGNALED(status));
   }
-
   return 1;
 }
-
 int lsh_execute(char **args)
 {
   int i;
 
   if (args[0] == NULL) {
-    // An empty command was entered.
     return 1;
   }
 
@@ -95,34 +81,33 @@ int lsh_execute(char **args)
 
   return lsh_launch(args);
 }
-
 char *lsh_read_line(void)
 {
 #ifdef LSH_USE_STD_GETLINE
   char *line = NULL;
-  ssize_t bufsize = 0; // have getline allocate a buffer for us
+  ssize_t bufsize = 0;
   if (getline(&line, &bufsize, stdin) == -1) {
     if (feof(stdin)) {
-      exit(EXIT_SUCCESS);  // We received an EOF
+      exit(EXIT_SUCCESS);
     } else  {
       perror("lsh: getline\n");
       exit(EXIT_FAILURE);
     }
   }
   return line;
-  #else
+#else
 #define LSH_RL_BUFSIZE 1024
   int bufsize = LSH_RL_BUFSIZE;
   int position = 0;
   char *buffer = malloc(sizeof(char) * bufsize);
   int c;
 
-   if (!buffer) {
+  if (!buffer) {
     fprintf(stderr, "lsh: allocation error\n");
     exit(EXIT_FAILURE);
   }
-   while (1) {
-    // Read a character
+
+  while (1) {
     c = getchar();
 
     if (c == EOF) {
@@ -134,7 +119,7 @@ char *lsh_read_line(void)
       buffer[position] = c;
     }
     position++;
-     if (position >= bufsize) {
+ if (position >= bufsize) {
       bufsize += LSH_RL_BUFSIZE;
       buffer = realloc(buffer, bufsize);
       if (!buffer) {
@@ -145,9 +130,8 @@ char *lsh_read_line(void)
   }
   #endif
 }
-
 #define LSH_TOK_BUFSIZE 64
-#define LSH_TOK_DELIM " \t\r\n\a"
+#define LSH_TOK_DELIM "\t\r\n\a"
 
 char **lsh_split_line(char *line)
 {
@@ -197,6 +181,7 @@ void lsh_loop(void)
     free(args);
   } while (status);
 }
+
 int main(int argc, char **argv) {
   lsh_loop();
   return EXIT_SUCCESS;
